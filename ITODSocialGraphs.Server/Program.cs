@@ -1,4 +1,6 @@
 
+using ITODSocialGraphs.Server.Services;
+using ITODSocialGraphs.Server.Services.Interfaces;
 using Serilog;
 
 namespace ITODSocialGraphs.Server
@@ -8,6 +10,8 @@ namespace ITODSocialGraphs.Server
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddTransient<IGraphService, GraphService>();
 
             // Додаємо сервіс контролерів
             builder.Services.AddControllers();
