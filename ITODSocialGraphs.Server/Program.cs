@@ -26,6 +26,18 @@ namespace ITODSocialGraphs.Server
                 .CreateLogger();
             builder.Host.UseSerilog();
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowCors", policy =>
+                {
+                    policy
+                        .WithOrigins("*") // або "*" для тимчасового дозволу всіх
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
+
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -34,6 +46,7 @@ namespace ITODSocialGraphs.Server
                 app.UseSwaggerUI();
             }
 
+            app.UseCors("AllowCors");
             app.UseRouting();
             app.UseAuthorization();
             app.MapControllers();

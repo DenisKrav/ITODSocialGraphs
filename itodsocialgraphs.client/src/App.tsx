@@ -1,58 +1,48 @@
-import { useEffect, useState } from 'react';
-import './App.css';
-
-interface Forecast {
-    date: string;
-    temperatureC: number;
-    temperatureF: number;
-    summary: string;
-}
+import { useEffect, useState } from "react";
+import { Graph } from "./types/graph";
+import { getGraph } from "./services/api";
+import GraphView from "./components/GraphView";
+import NodeForm from "./components/NodeForm";
+import EdgeForm from "./components/EdgeForm";
+import DeleteNodeForm from "./components/DeleteNodeForm";
+import DeleteEdgeForm from "./components/DeleteEdgeForm";
+import GraphTables from "./components/GraphTables";
+import GraphAnalysisPanel from "./components/GraphAnalysisPanel";
 
 function App() {
-    const [forecasts, setForecasts] = useState<Forecast[]>();
+  const [graph, setGraph] = useState<Graph>({ nodes: [], edges: [] });
 
-    useEffect(() => {
-        populateWeatherData();
-    }, []);
-
-    const contents = forecasts === undefined
-        ? <p><em>Loading... Please refresh once the ASP.NET backend has started. See <a href="https://aka.ms/jspsintegrationreact">https://aka.ms/jspsintegrationreact</a> for more details.</em></p>
-        : <table className="table table-striped" aria-labelledby="tableLabel">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Temp. (C)</th>
-                    <th>Temp. (F)</th>
-                    <th>Summary</th>
-                </tr>
-            </thead>
-            <tbody>
-                {forecasts.map(forecast =>
-                    <tr key={forecast.date}>
-                        <td>{forecast.date}</td>
-                        <td>{forecast.temperatureC}</td>
-                        <td>{forecast.temperatureF}</td>
-                        <td>{forecast.summary}</td>
-                    </tr>
-                )}
-            </tbody>
-        </table>;
-
-    return (
-        <div>
-            <h1 id="tableLabel">Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            {contents}
-        </div>
-    );
-
-    async function populateWeatherData() {
-        const response = await fetch('weatherforecast');
-        if (response.ok) {
-            const data = await response.json();
-            setForecasts(data);
-        }
+  const fetchGraph = async () => {
+    try {
+      const data = await getGraph();
+      setGraph(data);
+    } catch (err) {
+      console.error("Помилка завантаження графа:", err);
     }
+  };
+
+  useEffect(() => {
+    fetchGraph();
+  }, []);
+
+  return (
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-4">Соціальний граф</h1>
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="md:w-1/3">
+          <NodeForm onUpdate={fetchGraph} />
+          <EdgeForm onUpdate={fetchGraph} />
+          <DeleteNodeForm onUpdate={fetchGraph} />
+          <DeleteEdgeForm onUpdate={fetchGraph} />
+        </div>
+        <div className="md:w-2/3">
+          <GraphView graph={graph} />
+          <GraphAnalysisPanel />
+          <GraphTables graph={graph} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default App;
